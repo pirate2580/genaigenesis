@@ -2,3 +2,4 @@ fastapi
 uvicorn
 cohere
 pydantic
+google-generativeai

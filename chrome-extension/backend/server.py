@@ -1,18 +1,32 @@
+import google.generativeai as genai
 from fastapi import FastAPI
 from pydantic import BaseModel
-import cohere
 
+# Configure API key
+genai.configure(api_key="API-KEY")
+
+# Initialize FastAPI app
 app = FastAPI()
-co = cohere.Client("API-KEY")
 
+# Request model for dynamic input
 class ChatRequest(BaseModel):
     message: str
-    chat_history: list = []  # Ensure it's a list, default to empty
+    model: str = "gemini-1.5-flash"  # Default model
 
 @app.post("/chat")
 async def chat(request: ChatRequest):
-    response = co.chat(
-        message=request.message,
-        chat_history=request.chat_history  # Pass list, not string
-    )
-    return {"response": response.text}
+    try:
+        # Validate model name
+        available_models = ["gemini-1.5-flash", "gemini-1.5-pro"]
+        if request.model not in available_models:
+            return {"error": "Invalid model. Use 'gemini-1.5-flash' or 'gemini-1.5-pro'."}
+
+        # Create model instance
+        model = genai.GenerativeModel(request.model)
+
+        # Generate response
+        response = model.generate_content(request.message)
+        return {"response": response.text}
+
+    except Exception as e:
+        return {"error": str(e)}
