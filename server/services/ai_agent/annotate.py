@@ -1,11 +1,15 @@
 import base64
 import asyncio
+import os
 from langchain_core.runnables import chain as chain_decorator
 
 # Some javascript we will run on each step
 # to take a screenshot of the page, select the
 # elements to annotate, and add bounding boxes
-with open("mark_page.js") as f:
+
+mark_page_path = os.path.join(os.path.dirname(__file__), "mark_page.js")
+
+with open(mark_page_path) as f:
     mark_page_script = f.read()
 
 

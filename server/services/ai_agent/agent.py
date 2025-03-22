@@ -12,9 +12,9 @@ from langchain_core.messages import BaseMessage, SystemMessage
 from langchain_core.runnables import RunnableLambda
 from langgraph.graph import END, START, StateGraph
 from langchain_openai import ChatOpenAI
-from server.services.ai_agent.annotate import mark_page
-from server.services.ai_agent.definitions import AgentState
-from server.services.ai_agent.tools import click, type_text, scroll, wait, go_back, to_google
+from annotate import mark_page
+from definitions import AgentState
+from tools import click, type_text, scroll, wait, go_back, to_google
 from IPython import display
 from playwright.async_api import async_playwright
 import re

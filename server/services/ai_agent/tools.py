@@ -8,7 +8,7 @@ TODO: add tool to summarize website, use another smaller LLM for that, webscrape
 
 import asyncio
 import platform
-from server.services.ai_agent.definitions import AgentState
+from definitions import AgentState
 
 async def click(state: AgentState):
   # - Click [Numerical_Label]
