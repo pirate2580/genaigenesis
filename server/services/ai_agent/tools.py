@@ -16,61 +16,42 @@ async def random_delay(min_delay=0.5, max_delay=1.5):
   await asyncio.sleep(random.uniform(min_delay, max_delay))
 
 # helper function to hover for some time
-async def small_hover(page, duration=None):
-  """Optional hover or idle time to appear more human."""
-  await random_delay(0.5, 1.0)
-  if duration is None:
-      duration = random.uniform(0.2, 1.0)
-  await asyncio.sleep(duration)
+# async def small_hover(page, duration=None):
+#   """Optional hover or idle time to appear more human."""
+#   if duration is None:
+#       duration = random.uniform(0.2, 1.0)
+#   await asyncio.sleep(duration)
 
-async def random_mouse_move_away(page):
-    """
-    Move the mouse off the target area randomly, 
-    simulating human 'drift' or checking another part of the screen.
-    """
-    curr_mouse_pos = await page.mouse.position()
-    # Move the mouse some random offset away
-    offset_x = random.uniform(-200, 200)
-    offset_y = random.uniform(-200, 200)
-    steps = random.randint(10, 20)
-    for i in range(steps):
-        await page.mouse.move(
-            curr_mouse_pos['x'] + offset_x * i / steps,
-            curr_mouse_pos['y'] + offset_y * i / steps
-        )
-        await asyncio.sleep(random.uniform(0.01, 0.05))
+# async def random_mouse_move_away(page):
+#     """
+#     Move the mouse off the target area randomly, 
+#     simulating human 'drift' or checking another part of the screen.
+#     """
+#     curr_mouse_pos = await page.mouse.position()
+#     # Move the mouse some random offset away
+#     offset_x = random.uniform(-200, 200)
+#     offset_y = random.uniform(-200, 200)
+#     steps = random.randint(10, 20)
+#     for i in range(steps):
+#         await page.mouse.move(
+#             curr_mouse_pos['x'] + offset_x * i / steps,
+#             curr_mouse_pos['y'] + offset_y * i / steps
+#         )
+#         await asyncio.sleep(random.uniform(0.01, 0.05))
 
 # Helper function for click to make moving mouse slower to prevent google detection
-last_mouse_position = (0, 0)
+# async def humanize_mouse_move(page, target_x, target_y):
+#   curr_mouse_position = await page.mouse.position()
+#   x_diff, y_diff = target_x - curr_mouse_position['x'], target_y - curr_mouse_position['y']
 
-async def get_mouse_position(page):
-    return await page.evaluate("""
-        () => new Promise(resolve => {
-            document.addEventListener('mousemove', event => {
-                resolve({ x: event.clientX, y: event.clientY });
-            }, { once: true });
-        })
-    """)
-
-async def random_mouse_move_away(page):
-    curr_mouse_pos = await get_mouse_position(page)  # Fetch position from browser
-    new_x = curr_mouse_pos["x"] + 100
-    new_y = curr_mouse_pos["y"] + 100
-
-    await page.mouse.move(new_x, new_y)
-
-
-async def humanize_mouse_move(page, x, y):
-    await random_delay(0.3, 1.0)
-    global last_mouse_position
-    last_x, last_y = last_mouse_position  # Use stored position
-
-    # Move the mouse
-    await page.mouse.move(x, y)
-    
-    # Update stored position
-    last_mouse_position = (x, y)
-
+#   # break down movement into total steps, mouse moves in 20-40 steps
+#   steps = random.randint(80, 100)
+#   for i in range(steps):
+#     await page.mouse.move(
+#       curr_mouse_position['x'] + x_diff * i / steps,
+#       curr_mouse_position['y'] + y_diff * i / steps
+#     )
+#     await random_delay(0.1, 2)
 
 async def click(state: AgentState):
   # - Click [Numerical_Label]
@@ -89,16 +70,16 @@ async def click(state: AgentState):
   x, y = bbox["x"], bbox["y"]
 
   # make mouse move slower
-  await humanize_mouse_move(page, x, y)
+  # await humanize_mouse_move(page, x, y)
 
   # Hover slightly
-  await small_hover(page, duration=random.uniform(0.3, 1.2))
+  # await small_hover(page, duration=random.uniform(0.3, 1.2))
 
   await page.mouse.click(x, y)
-  await small_hover(page, duration=random.uniform(0.2, 0.5))
+  # await small_hover(page, duration=random.uniform(0.2, 0.5))
 
-  if random.random() < 0.5:
-    await random_mouse_move_away(page)
+  # if random.random() < 0.5:
+  #   await random_mouse_move_away(page)
 
   return f"Clicked {bbox_id}"
 
@@ -117,8 +98,8 @@ async def type_text(state: AgentState):
   bbox = state["bboxes"][bbox_id]
   x, y = bbox["x"], bbox["y"]
 
-  await humanize_mouse_move(page, x, y)
-  await small_hover(page, duration=random.uniform(0.2, 0.8))
+  # await humanize_mouse_move(page, x, y)
+  # await small_hover(page, duration=random.uniform(0.2, 0.8))
 
 
   text_content = type_args[1]
@@ -134,15 +115,13 @@ async def type_text(state: AgentState):
   await page.keyboard.type(text_content, delay=random.uniform(50, 150)) 
   await page.keyboard.press("Enter")
 
-  if random.random() < 0.5:
-        await random_mouse_move_away(page)
+  # if random.random() < 0.5:
+  #       await random_mouse_move_away(page)
         
   return f"Typed {text_content} and submitted"
 
 
 async def scroll(state: AgentState):
-  await random_delay(0.3, 1.0)
-
   page = state["page"]
   scroll_args = state["prediction"]["args"]
   if scroll_args is None or len(scroll_args) != 2:
@@ -171,7 +150,7 @@ async def scroll(state: AgentState):
       # await page.mouse.move(x, y)
 
       # slow down mouse movement
-      await humanize_mouse_move(page, x, y)
+      # await humanize_mouse_move(page, x, y)
       for _ in range(random.randint(3, 6)):  # Scroll in steps
         await page.mouse.wheel(0, scroll_direction / 5)
         await random_delay(0.1, 0.2)
@@ -180,24 +159,18 @@ async def scroll(state: AgentState):
 
 
 async def wait(state: AgentState):
-  await random_delay(0.3, 1.0)
-
   sleep_time = 5
   await asyncio.sleep(sleep_time)
   return f"Waited for {sleep_time}s."
 
 
 async def go_back(state: AgentState):
-  await random_delay(0.3, 1.0)
-
   page = state["page"]
   await page.go_back()
   return f"Navigated back a page to {page.url}."
 
 
 async def to_google(state: AgentState):
-  await random_delay(0.3, 1.0)
-
   page = state["page"]
   await page.goto("https://www.google.com/")
   return "Navigated to google.com."
