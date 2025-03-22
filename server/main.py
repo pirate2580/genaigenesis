@@ -1,6 +1,8 @@
+# TODO move this into chat API request
+
 import asyncio
 from playwright.async_api import async_playwright
-from agent import create_graph, update_scratchpad, select_tool, call_agent
+from server.services.ai_agent.agent import create_graph, update_scratchpad, select_tool, call_agent
 
 async def main():
     async with async_playwright() as p:

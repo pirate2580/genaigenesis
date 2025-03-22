@@ -4,7 +4,7 @@ File containing all AI Agent tools
 
 import asyncio
 import platform
-from definitions import AgentState
+from server.services.ai_agent.definitions import AgentState
 
 async def click(state: AgentState):
   # - Click [Numerical_Label]
