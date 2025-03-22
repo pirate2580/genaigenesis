@@ -8,7 +8,7 @@ const DarkModeChatbot = () => {
     timestamp: Date;
   }[]>([]);
   const [isLoading, setIsLoading] = useState(false);
-  const [isTranscribing, setIsTranscribing] = useState(false);
+  // const [isTranscribing, setIsTranscribing] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   
   useEffect(() => {
@@ -31,12 +31,14 @@ const DarkModeChatbot = () => {
     setMessages(prev => [...prev, userMessage]);
     setInput("");
     setIsLoading(true);
+
+    console.log(input);
     
     try {
       const response = await fetch("http://127.0.0.1:5000/agent/browser_control", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ message: input }),
+        body: JSON.stringify({ question: input }),
       });
       
       if (!response.ok) {
@@ -75,19 +77,18 @@ const DarkModeChatbot = () => {
     }
   };
 
-  const toggleTranscription = () => {
-    setIsTranscribing((prev) => !prev);
-  };
+  // const toggleTranscription = () => {
+  //   setIsTranscribing((prev) => !prev);
+  // };
 
   return (
     <div className="flex flex-col h-full w-full rounded-xl overflow-hidden shadow-xl font-sans bg-gray-900 text-gray-100">
       <div className="flex justify-between items-center px-6 py-4 bg-gray-800 border-b border-gray-700">
         <div className="text-lg font-medium">AI Assistant</div>
         <button 
-          className={`px-4 py-2 rounded-lg text-white ${isTranscribing ? "bg-red-500" : "bg-green-500"}`}
-          onClick={toggleTranscription}
+          className={`px-4 py-2 rounded-lg text-white `}
         >
-          {isTranscribing ? "Stop Transcribing" : "Start Transcribing"}
+          asdfadfs
         </button>
       </div>
 
