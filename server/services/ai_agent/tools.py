@@ -18,6 +18,7 @@ async def random_delay(min_delay=0.5, max_delay=1.5):
 # helper function to hover for some time
 async def small_hover(page, duration=None):
   """Optional hover or idle time to appear more human."""
+  await random_delay(0.5, 1.0)
   if duration is None:
       duration = random.uniform(0.2, 1.0)
   await asyncio.sleep(duration)
@@ -40,18 +41,36 @@ async def random_mouse_move_away(page):
         await asyncio.sleep(random.uniform(0.01, 0.05))
 
 # Helper function for click to make moving mouse slower to prevent google detection
-async def humanize_mouse_move(page, target_x, target_y):
-  curr_mouse_position = await page.mouse.position()
-  x_diff, y_diff = target_x - curr_mouse_position['x'], target_y - curr_mouse_position['y']
+last_mouse_position = (0, 0)
 
-  # break down movement into total steps, mouse moves in 20-40 steps
-  steps = random.randint(80, 100)
-  for i in range(steps):
-    await page.mouse.move(
-      curr_mouse_position['x'] + x_diff * i / steps,
-      curr_mouse_position['y'] + y_diff * i / steps
-    )
-    await random_delay(0.1, 2)
+async def get_mouse_position(page):
+    return await page.evaluate("""
+        () => new Promise(resolve => {
+            document.addEventListener('mousemove', event => {
+                resolve({ x: event.clientX, y: event.clientY });
+            }, { once: true });
+        })
+    """)
+
+async def random_mouse_move_away(page):
+    curr_mouse_pos = await get_mouse_position(page)  # Fetch position from browser
+    new_x = curr_mouse_pos["x"] + 100
+    new_y = curr_mouse_pos["y"] + 100
+
+    await page.mouse.move(new_x, new_y)
+
+
+async def humanize_mouse_move(page, x, y):
+    await random_delay(0.3, 1.0)
+    global last_mouse_position
+    last_x, last_y = last_mouse_position  # Use stored position
+
+    # Move the mouse
+    await page.mouse.move(x, y)
+    
+    # Update stored position
+    last_mouse_position = (x, y)
+
 
 async def click(state: AgentState):
   # - Click [Numerical_Label]
@@ -122,6 +141,8 @@ async def type_text(state: AgentState):
 
 
 async def scroll(state: AgentState):
+  await random_delay(0.3, 1.0)
+
   page = state["page"]
   scroll_args = state["prediction"]["args"]
   if scroll_args is None or len(scroll_args) != 2:
@@ -159,18 +180,24 @@ async def scroll(state: AgentState):
 
 
 async def wait(state: AgentState):
+  await random_delay(0.3, 1.0)
+
   sleep_time = 5
   await asyncio.sleep(sleep_time)
   return f"Waited for {sleep_time}s."
 
 
 async def go_back(state: AgentState):
+  await random_delay(0.3, 1.0)
+
   page = state["page"]
   await page.go_back()
   return f"Navigated back a page to {page.url}."
 
 
 async def to_google(state: AgentState):
+  await random_delay(0.3, 1.0)
+
   page = state["page"]
   await page.goto("https://www.google.com/")
   return "Navigated to google.com."

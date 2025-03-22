@@ -2,67 +2,67 @@
 Naoroj:
 
 File with helper functions used in run_ai_agent.py
-These functions overall build the ai agent
+These functions overall build the AI agent.
 """
 
+import asyncio
+import re
+import os
+import platform
+from dotenv import load_dotenv
+
 from langchain import hub
+from langchain_google_genai import ChatGoogleGenerativeAI
 from langchain_core.output_parsers import StrOutputParser
-from langchain_core.runnables import RunnablePassthrough
-from langchain_core.messages import BaseMessage, SystemMessage
-from langchain_core.runnables import RunnableLambda
+from langchain_core.runnables import RunnablePassthrough, RunnableLambda
+from langchain_core.messages import SystemMessage
 from langgraph.graph import END, START, StateGraph
-from langchain_openai import ChatOpenAI
+
 from annotate import mark_page
 from definitions import AgentState
 from tools import click, type_text, scroll, wait, go_back, to_google
-from IPython import display
 from playwright.async_api import async_playwright
-import re
-import os
-from dotenv import load_dotenv
+
+# Load environment variables
 load_dotenv()
 
 # Function to mark page from js
 async def annotate(state):
-  marked_page = await mark_page.with_retry().ainvoke(state["page"])
-  return {**state, **marked_page}
+    marked_page = await mark_page.with_retry().ainvoke(state["page"])
+    return {**state, **marked_page}
 
-# Format bounding boxes obtained from js script to mark page
+# Format bounding boxes obtained from JS script to mark page
 def format_descriptions(state):
-  labels = []
-  for i, bbox in enumerate(state["bboxes"]):
-    text = bbox.get("ariaLabel") or ""
-    if not text.strip():
-        text = bbox["text"]
-    el_type = bbox.get("type")
-    labels.append(f'{i} (<{el_type}/>): "{text}"')
-  bbox_descriptions = "\nValid Bounding Boxes:\n" + "\n".join(labels)
-  return {**state, "bbox_descriptions": bbox_descriptions}
+    labels = []
+    for i, bbox in enumerate(state["bboxes"]):
+        text = bbox.get("ariaLabel") or bbox["text"]
+        el_type = bbox.get("type")
+        labels.append(f'{i} (<{el_type}/>): "{text}"')
+
+    bbox_descriptions = "\nValid Bounding Boxes:\n" + "\n".join(labels)
+    return {**state, "bbox_descriptions": bbox_descriptions}
 
 # Helper function to parse LLM output
 def parse(text: str) -> dict:
-  action_prefix = "Action: "
-  if not text.strip().split("\n")[-1].startswith(action_prefix):
-      return {"action": "retry", "args": f"Could not parse LLM Output: {text}"}
-  action_block = text.strip().split("\n")[-1]
+    action_prefix = "Action: "
+    if not text.strip().split("\n")[-1].startswith(action_prefix):
+        return {"action": "retry", "args": f"Could not parse LLM Output: {text}"}
 
-  action_str = action_block[len(action_prefix) :]
-  split_output = action_str.split(" ", 1)
-  if len(split_output) == 1:
-      action, action_input = split_output[0], None
-  else:
-      action, action_input = split_output
-  action = action.strip()
-  if action_input is not None:
-      action_input = [
-          inp.strip().strip("[]") for inp in action_input.strip().split(";")
-      ]
-  return {"action": action, "args": action_input}
+    action_block = text.strip().split("\n")[-1]
+    action_str = action_block[len(action_prefix):]
+    split_output = action_str.split(" ", 1)
 
-# node to update LLMs observations
+    action, action_input = (split_output[0], None) if len(split_output) == 1 else split_output
+    action = action.strip()
+    
+    if action_input is not None:
+        action_input = [inp.strip().strip("[]") for inp in action_input.strip().split(";")]
+    
+    return {"action": action, "args": action_input}
+
+# Node to update LLM observations
 def update_scratchpad(state: AgentState):
-    """After a tool is invoked, we want to update
-    the scratchpad so the agent is aware of its previous steps"""
+    """Updates the scratchpad so the agent is aware of its previous steps."""
     old = state.get("scratchpad")
     if old:
         txt = old[0].content
@@ -71,15 +71,13 @@ def update_scratchpad(state: AgentState):
     else:
         txt = "Previous action observations:\n"
         step = 1
-    txt += f"\n{step}. {state['observation']}"
 
+    txt += f"\n{step}. {state['observation']}"
     return {**state, "scratchpad": [SystemMessage(content=txt)]}
 
-# node to select the proper tool to use
+# Node to select the proper tool to use
 def select_tool(state: AgentState):
-    # Any time the agent completes, this function
-    # is called to route the output to a tool or
-    # to the end user.
+    """Determines which tool to use based on the agent's prediction."""
     action = state["prediction"]["action"]
     if action == "ANSWER":
         return END
@@ -87,13 +85,13 @@ def select_tool(state: AgentState):
         return "agent"
     return action
 
-# Function to create LangGraph Agent
+# Function to create LangGraph Agent with Gemini AI
 def create_graph(update_scratchpad, select_tool):
     """Creates and compiles the StateGraph with tools and conditional logic."""
     prompt = hub.pull("wfh/web-voyager")
-    OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
+    GEMINI_API_KEY = os.getenv("GEMINI_API_KEY")
 
-    llm = ChatOpenAI(api_key=OPENAI_API_KEY, model="gpt-4-turbo", max_tokens=4096)
+    llm = ChatGoogleGenerativeAI(model="gemini-2.0-flash", google_api_key=GEMINI_API_KEY)
     
     agent = annotate | RunnablePassthrough.assign(
         prediction=format_descriptions | prompt | llm | StrOutputParser() | parse
@@ -102,7 +100,6 @@ def create_graph(update_scratchpad, select_tool):
 
     graph_builder.add_node("agent", agent)
     graph_builder.add_edge(START, "agent")
-
     graph_builder.add_node("update_scratchpad", update_scratchpad)
     graph_builder.add_edge("update_scratchpad", "agent")
 
@@ -142,7 +139,7 @@ async def call_agent(graph, question: str, page, max_steps: int = 150):
             "recursion_limit": max_steps,
         },
     )
-    
+
     final_answer = None
     steps = []
     async for event in event_stream:
