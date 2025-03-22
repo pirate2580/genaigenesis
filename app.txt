@@ -1,0 +1,27 @@
+  
+  // TODO: NOTE THAT THIS IS JUST AN EXAMPLE OF HOW TO SET UP THE CODE, to run demo put in the function app.tsx
+  // const [count, setCount] = useState(0)
+
+  // const [color, setColor] = useState("white");
+
+  // const onclick = async () => {
+  //   // let [tab] = await chrome.tabs.query({active: true});
+  //   const [tab] = await chrome.tabs.query({active: true});
+
+
+  //   // HAVE TO PASS IN A VARIABLE WHENN YOU DO AN EXECUTE SCRIPT !!!!
+
+  //   // THIS IS AN EXAMPLE OF HOW TO GO FROM THE POPUP CONTEXT TO THE DOCUMENT CONTEXT
+  //   if (tab.id) {
+  //     // arguments are a string array
+  //     chrome.scripting.executeScript <string[], void>({
+  //       target: {tabId: tab.id},
+  //       args:[color],
+  //       func: (color) => {
+  //         // alert("hello from my extension");
+  //         // NOTE THIS EXECUTES IN THE CONTEXT OF THE DOCUMENT WHILE THE REST OF THE CODE EXECUTES IN CONTEXT OF THE POPUP
+  //         document.body.style.backgroundColor = color;
+  //       }
+  //     });
+  //   }
+  // }

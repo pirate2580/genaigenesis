@@ -1,0 +1,15 @@
+{
+  "manifest_version": 3,
+  "version": "1.0.0",
+  "name": "Autonomous Computer Using Agent",
+  "action": {
+    "default_popup": "index.html"
+  },
+  "permissions": [
+    "scripting"
+  ],
+  "host_permissions": [
+    "http://*/*/",
+    "https://*/*/"
+  ]
+}
