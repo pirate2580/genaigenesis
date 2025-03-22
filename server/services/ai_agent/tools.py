@@ -1,5 +1,9 @@
 """
-File containing all AI Agent tools
+File containing all AI Agent tools to interact with browser
+
+TODO: add more tools to screenshot images ie if someone wants to get specific images for a research report
+
+TODO: add tool to summarize website, use another smaller LLM for that, webscrape w BeautifulSoup and then just throw to LLM with good prompt
 """
 
 import asyncio

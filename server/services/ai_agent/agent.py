@@ -1,3 +1,10 @@
+"""
+Naoroj:
+
+File with helper functions used in run_ai_agent.py
+These functions overall build the ai agent
+"""
+
 from langchain import hub
 from langchain_core.output_parsers import StrOutputParser
 from langchain_core.runnables import RunnablePassthrough
@@ -5,9 +12,9 @@ from langchain_core.messages import BaseMessage, SystemMessage
 from langchain_core.runnables import RunnableLambda
 from langgraph.graph import END, START, StateGraph
 from langchain_openai import ChatOpenAI
-from annotate import mark_page
-from definitions import AgentState
-from tools import click, type_text, scroll, wait, go_back, to_google
+from server.services.ai_agent.annotate import mark_page
+from server.services.ai_agent.definitions import AgentState
+from server.services.ai_agent.tools import click, type_text, scroll, wait, go_back, to_google
 from IPython import display
 from playwright.async_api import async_playwright
 import re
@@ -20,7 +27,7 @@ async def annotate(state):
   marked_page = await mark_page.with_retry().ainvoke(state["page"])
   return {**state, **marked_page}
 
-
+# Format bounding boxes obtained from js script to mark page
 def format_descriptions(state):
   labels = []
   for i, bbox in enumerate(state["bboxes"]):
@@ -32,7 +39,7 @@ def format_descriptions(state):
   bbox_descriptions = "\nValid Bounding Boxes:\n" + "\n".join(labels)
   return {**state, "bbox_descriptions": bbox_descriptions}
 
-
+# Helper function to parse LLM output
 def parse(text: str) -> dict:
   action_prefix = "Action: "
   if not text.strip().split("\n")[-1].startswith(action_prefix):
@@ -52,6 +59,7 @@ def parse(text: str) -> dict:
       ]
   return {"action": action, "args": action_input}
 
+# node to update LLMs observations
 def update_scratchpad(state: AgentState):
     """After a tool is invoked, we want to update
     the scratchpad so the agent is aware of its previous steps"""
@@ -67,6 +75,7 @@ def update_scratchpad(state: AgentState):
 
     return {**state, "scratchpad": [SystemMessage(content=txt)]}
 
+# node to select the proper tool to use
 def select_tool(state: AgentState):
     # Any time the agent completes, this function
     # is called to route the output to a tool or
@@ -78,6 +87,7 @@ def select_tool(state: AgentState):
         return "agent"
     return action
 
+# Function to create LangGraph Agent
 def create_graph(update_scratchpad, select_tool):
     """Creates and compiles the StateGraph with tools and conditional logic."""
     prompt = hub.pull("wfh/web-voyager")
@@ -119,7 +129,7 @@ def create_graph(update_scratchpad, select_tool):
 
     return graph_builder.compile()
 
-
+# Function to call the AI agent on a question
 async def call_agent(graph, question: str, page, max_steps: int = 150):
     """Runs the graph with the given question and page, returning the agent's response."""
     event_stream = graph.astream(

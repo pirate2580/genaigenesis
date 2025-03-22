@@ -1,3 +1,11 @@
+"""
+File that contains definitions that agent needs
+
+Note: Bounding box class is for the bounding boxes found from JS script. Used later in pipeline to help AI agent know where to click 
+
+Other class defns are standard
+"""
+
 from typing import List, Optional
 from typing_extensions import TypedDict
 
