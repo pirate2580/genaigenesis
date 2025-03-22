@@ -6,8 +6,12 @@
     "default_popup": "index.html"
   },
   "permissions": [
-    "scripting"
+    "scripting",
+    "audioCapture"
   ],
+  "background": {
+    "service_worker": "background.js"
+  },
   "host_permissions": [
     "http://*/*/",
     "https://*/*/"

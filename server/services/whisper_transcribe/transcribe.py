@@ -1,73 +1,93 @@
 import sounddevice as sd
 import numpy as np
 import wave
+import os
+import whisper
 # import server.services.whisper.transcribe as transcribe
 
-recording = False
-audio_data = []
+# recording = False
+# audio_data = []
 
+import ffmpeg
 
-# finds the correct num. of input channels for audio device
-def get_default_input_channels():
-    """Detect the maximum supported input channels for the default microphone."""
+def convert_webm_to_wav(input_file, output_file):
+    """
+    Converts a .webm file to .wav using ffmpeg for improved Whisper compatibility.
+    """
     try:
-        device_info = sd.query_devices(kind='input')
-        return min(device_info['max_input_channels'], 2)  # Limit to 2 for stereo max
-    except Exception as e:
-        print(f"Error detecting input channels: {e}")
-        return 1  # Fallback to mono if detection fails
+        ffmpeg.input(input_file).output(output_file, format='wav').run(quiet=True, overwrite_output=True)
+        return output_file
+    except ffmpeg.Error as e:
+        print(f"Error during conversion: {e}")
+        return None
+
+
+# # finds the correct num. of input channels for audio device
+# def get_default_input_channels():
+#     """Detect the maximum supported input channels for the default microphone."""
+#     try:
+#         device_info = sd.query_devices(kind='input')
+#         return min(device_info['max_input_channels'], 2)  # Limit to 2 for stereo max
+#     except Exception as e:
+#         print(f"Error detecting input channels: {e}")
+#         return 1  # Fallback to mono if detection fails
     
-# Start continuous audio recording
-def start_recording():
-    print("Hi")
-    global recording, audio_data
-    if not recording:
-        recording = True
-        audio_data = []
-        sd.default.samplerate = 44100
-        sd.default.channels = get_default_input_channels()
+# # Start continuous audio recording
+# def start_recording():
+#     print("Hi")
+#     global recording, audio_data
+#     if not recording:
+#         recording = True
+#         audio_data = []
+#         sd.default.samplerate = 44100
+#         sd.default.channels = get_default_input_channels()
 
-        def _record():
-            while recording:
-                buffer = sd.rec(int(44100 * 1), dtype='int16')
-                sd.wait()
-                audio_data.append(buffer)
-                print("hello")
+#         def _record():
+#             while recording:
+#                 buffer = sd.rec(int(44100 * 1), dtype='int16')
+#                 sd.wait()
+#                 audio_data.append(buffer)
+#                 print("hello")
         
-        import threading
-        threading.Thread(target=_record).start()
+#         import threading
+#         threading.Thread(target=_record).start()
 
-# Stop recording and save audio to file
-def stop_recording(filename="output.wav"):
-    global recording, audio_data
-    recording = False
+# # Stop recording and save audio to file
+# def stop_recording(filename="output.wav"):
+#     global recording, audio_data
+#     recording = False
 
-    if not audio_data:
-        print("No audio data captured.")
-        return None
+#     if not audio_data:
+#         print("No audio data captured.")
+#         return None
 
-    try:
-        audio_array = np.concatenate(audio_data)
-        with wave.open(filename, 'wb') as wf:
-            wf.setnchannels(get_default_input_channels())
-            wf.setsampwidth(2)  # 16-bit PCM
-            wf.setframerate(44100)
-            wf.writeframes(audio_array.tobytes())
+#     try:
+#         audio_array = np.concatenate(audio_data)
+#         with wave.open(filename, 'wb') as wf:
+#             wf.setnchannels(get_default_input_channels())
+#             wf.setsampwidth(2)  # 16-bit PCM
+#             wf.setframerate(44100)
+#             wf.writeframes(audio_array.tobytes())
 
-        print(f"Recording saved as {filename}")
-        return filename
-    except Exception as e:
-        print(f"Error saving audio file: {e}")
-        return None
+#         print(f"Recording saved as {filename}")
+#         return filename
+#     except Exception as e:
+#         print(f"Error saving audio file: {e}")
+#         return None
 
 # Transcription Logic
-def transcribe_audio(filename="output.wav"):
+def transcribe_audio(file):
     """
     Transcribes the given audio file using Whisper.
     """
     try:
-        model = transcribe.load_model("base")  # You can change to "small", "medium", "large"
-        result = model.transcribe(filename)
+        wav_file = file.replace('.webm', '.wav')
+        convert_webm_to_wav(file, wav_file)
+
+        model = whisper.load_model("base")  # You can change to "small", "medium", "large"
+        result = model.transcribe(wav_file)
+        os.remove(wav_file)
+
         return result.get("text", "")
     except Exception as e:
         print(f"Error during transcription: {e}")

@@ -15,6 +15,6 @@ def create_app():
 
     # Register the blueprint for your API routes
     app.register_blueprint(agent_route.agent_blueprint, url_prefix="/agent")
-    app.register_blueprint(transcribe_route.transcribe_blueprint, url_prefix="/transcribe")
+    # app.register_blueprint(transcribe_route.transcribe_blueprint, url_prefix="/transcribe")
 
     return app
