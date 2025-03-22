@@ -75,7 +75,7 @@ def update_scratchpad(state: AgentState):
     txt += f"\n{step}. {state['observation']}"
     return {**state, "scratchpad": [SystemMessage(content=txt)]}
 
-# Node to select the proper tool to use
+# Node to select the proper tool to use: TODO don't end
 def select_tool(state: AgentState):
     """Determines which tool to use based on the agent's prediction."""
     action = state["prediction"]["action"]
