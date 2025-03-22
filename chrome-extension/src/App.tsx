@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef } from "react";
+import AudioButton from "./RecordButton"
 
 const DarkModeChatbot = () => {
   const [input, setInput] = useState("");
@@ -77,31 +78,76 @@ const DarkModeChatbot = () => {
     }
   };
 
-  // const toggleTranscription = () => {
-  //   setIsTranscribing((prev) => !prev);
-  // };
+  // return (
+  //   <div className="flex flex-col h-full w-full rounded-xl overflow-hidden shadow-xl font-sans bg-gray-900 text-gray-100">
+  //     <div className="flex justify-between items-center px-6 py-4 bg-gray-800 border-b border-gray-700">
+  //       <div className="text-lg font-medium">AI Assistant</div>
+  //       {/* <button 
+  //         className={`px-4 py-2 rounded-lg text-white `}
+  //       >
+  //         asdfadfs
+  //       </button> */}
+  //       <AudioButton/>
+  //     </div>
 
+  //     <div className="flex-1 overflow-y-auto p-6 bg-gray-900">
+  //       {messages.map((message, index) => (
+  //         <div key={index} className={`max-w-3/4 ${message.role === "user" ? "self-end" : "self-start"}`}>
+  //           <div className="text-sm mb-1 text-gray-400">{message.role === "user" ? "You" : "Assistant"} • {formatTime(message.timestamp)}</div>
+  //           <div className={`py-3 px-4 rounded-lg text-sm leading-relaxed ${message.role === "user" ? "bg-indigo-600 text-white" : "bg-gray-800 text-gray-100 border border-gray-700"}`}>{message.content}</div>
+  //         </div>
+  //       ))}
+  //       <div ref={messagesEndRef} />
+  //     </div>
+      
+  //     <div className="p-4 bg-gray-800 border-t border-gray-700">
+  //       <div className="flex gap-2 rounded-lg bg-gray-700">
+  //         <textarea
+  //           className="flex-1 py-3 px-4 bg-transparent border-none outline-none resize-none text-sm placeholder-gray-400 text-gray-100"
+  //           value={input}
+  //           onChange={(e) => setInput(e.target.value)}
+  //           onKeyDown={handleKeyDown}
+  //           placeholder="Message..."
+  //           rows={1}
+  //         />
+  //         <button 
+  //           className={`p-3 rounded-lg flex items-center justify-center transition-all ${input.trim() && !isLoading ? "bg-indigo-600 text-white hover:bg-indigo-700" : "bg-gray-600 text-gray-400 cursor-not-allowed"}`}
+  //           onClick={handleSend}
+  //           disabled={!input.trim() || isLoading}
+  //         >
+  //           Send
+  //         </button>
+  //       </div>
+  //     </div>
+  //   </div>
+  // );
   return (
-    <div className="flex flex-col h-full w-full rounded-xl overflow-hidden shadow-xl font-sans bg-gray-900 text-gray-100">
+    <div className="h-screen w-screen flex flex-col rounded-xl overflow-hidden shadow-xl font-sans bg-gray-900 text-gray-100">
+      {/* Header */}
       <div className="flex justify-between items-center px-6 py-4 bg-gray-800 border-b border-gray-700">
         <div className="text-lg font-medium">AI Assistant</div>
-        <button 
-          className={`px-4 py-2 rounded-lg text-white `}
-        >
+        {/* <button className="px-4 py-2 rounded-lg text-white bg-indigo-600 hover:bg-indigo-700">
           asdfadfs
-        </button>
+        </button> */}
+        <AudioButton/>
       </div>
-
-      <div className="flex-1 overflow-y-auto p-6 bg-gray-900">
+  
+      {/* Messages Container (Fills remaining space) */}
+      <div className="flex-1 overflow-y-auto p-6">
         {messages.map((message, index) => (
           <div key={index} className={`max-w-3/4 ${message.role === "user" ? "self-end" : "self-start"}`}>
-            <div className="text-sm mb-1 text-gray-400">{message.role === "user" ? "You" : "Assistant"} • {formatTime(message.timestamp)}</div>
-            <div className={`py-3 px-4 rounded-lg text-sm leading-relaxed ${message.role === "user" ? "bg-indigo-600 text-white" : "bg-gray-800 text-gray-100 border border-gray-700"}`}>{message.content}</div>
+            <div className="text-sm mb-1 text-gray-400">
+              {message.role === "user" ? "You" : "Assistant"} • {formatTime(message.timestamp)}
+            </div>
+            <div className={`py-3 px-4 rounded-lg text-sm leading-relaxed ${message.role === "user" ? "bg-indigo-600 text-white" : "bg-gray-800 text-gray-100 border border-gray-700"}`}>
+              {message.content}
+            </div>
           </div>
         ))}
         <div ref={messagesEndRef} />
       </div>
       
+      {/* Input Box */}
       <div className="p-4 bg-gray-800 border-t border-gray-700">
         <div className="flex gap-2 rounded-lg bg-gray-700">
           <textarea
@@ -122,7 +168,7 @@ const DarkModeChatbot = () => {
         </div>
       </div>
     </div>
-  );
+  )
 };
 
 export default DarkModeChatbot;

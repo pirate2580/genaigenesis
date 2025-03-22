@@ -1,58 +1,58 @@
 import React, { useState, useRef } from 'react';
 
 const AudioButton: React.FC = () => {
-  // bool to check if audio is recording
-  const [isRecording, setIsRecording] = useState<boolean>(false);
-  // pointer to store the audio recording for mediaRecorder
+  const [isRecording, setIsRecording] = useState(false);
   const mediaRecorderRef = useRef<MediaRecorder | null>(null);
-  // blob thats sent to backend
   const recordedChunks = useRef<Blob[]>([]);
 
-  // toggle function to toggle the recording
-  const toggleRecording = async () => {
-    if (!isRecording) {
-      // Start recording
-      setIsRecording(true);
-      
-      // new recording
-      recordedChunks.current = [];
-      try {
-        const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-        const mediaRecorder = new MediaRecorder(stream);
-        mediaRecorderRef.current = mediaRecorder;
+  const startRecording = async () => {
+    recordedChunks.current = [];
+    try {
+      const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+      const mediaRecorder = new MediaRecorder(stream);
+      mediaRecorderRef.current = mediaRecorder;
 
-        mediaRecorder.ondataavailable = (event: BlobEvent) => {
-          if (event.data.size > 0) {
-            recordedChunks.current.push(event.data);
-          }
-        };
+      // Gather the audio data as it becomes available.
+      mediaRecorder.ondataavailable = (event) => {
+        if (event.data.size > 0) {
+          recordedChunks.current.push(event.data);
+        }
+      };
 
-        mediaRecorder.onstop = async () => {
-          // Create a blob from the recorded chunks
-          const audioBlob = new Blob(recordedChunks.current, { type: 'audio/webm' });
-          // Make a dummy API request to your backend
-          try {
-            const response = await fetch('http://127.0.0.1:5000/transcribe', {
-              method: 'POST',
-              body: audioBlob,
-            });
-            console.log('Dummy API call completed:', response);
-          } catch (error) {
-            console.error('Error during dummy API call:', error);
-          }
-        };
+      // This will be called when recording stops.
+      mediaRecorder.onstop = async () => {
+        const audioBlob = new Blob(recordedChunks.current, { type: 'audio/webm' });
+        try {
+          await fetch('http://127.0.0.1:5000/transcribe', {
+            method: 'POST',
+            body: audioBlob,
+          });
+          console.log('Transcription API call made.');
+        } catch (error) {
+          console.error('Error during transcription API call:', error);
+        }
+      };
 
-        mediaRecorder.start();
-      } catch (error) {
-        console.error('Error starting recording:', error);
-        setIsRecording(false);
-      }
-    } else {
-      // Stop recording
+      mediaRecorder.start();
+    } catch (error) {
+      console.error('Error starting recording:', error);
       setIsRecording(false);
-      if (mediaRecorderRef.current) {
-        mediaRecorderRef.current.stop();
-      }
+    }
+  };
+
+  const stopRecording = () => {
+    if (mediaRecorderRef.current) {
+      mediaRecorderRef.current.stop();
+    }
+  };
+
+  const toggleRecording = async () => {
+    if (isRecording) {
+      stopRecording();
+      setIsRecording(false);
+    } else {
+      setIsRecording(true);
+      await startRecording();
     }
   };
 
