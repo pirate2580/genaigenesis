@@ -10,6 +10,7 @@ transcribe_blueprint = Blueprint("transcribe", __name__)
 
 @transcribe_blueprint.route("/start_recording", methods=["POST"])
 def api_start_recording():
+  print("audio recording")
   start_recording()
   return jsonify({"status": "Recording started"})
 
@@ -17,6 +18,7 @@ def api_start_recording():
 @transcribe_blueprint.route("/stop_recording", methods=["POST"])
 def api_stop_recording():
     filename = stop_recording()
+    print("hello")
     if not filename:
         return jsonify({"error": "No audio recorded"}), 400
 

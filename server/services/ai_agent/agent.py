@@ -10,6 +10,8 @@ import re
 import os
 import platform
 from dotenv import load_dotenv
+from playwright.async_api import TimeoutError
+
 
 from langchain import hub
 from langchain_google_genai import ChatGoogleGenerativeAI
@@ -127,8 +129,16 @@ def create_graph(update_scratchpad, select_tool):
     return graph_builder.compile()
 
 # Function to call the AI agent on a question
+
 async def call_agent(graph, question: str, page, max_steps: int = 150):
-    """Runs the graph with the given question and page, returning the agent's response."""
+    """Runs the graph with the given question and page,
+    ensuring stability before actions are taken."""
+    
+    try:
+        await page.wait_for_load_state("domcontentloaded")
+    except TimeoutError:
+        print("Page load timed out, but continuing execution.")
+
     event_stream = graph.astream(
         {
             "page": page,
@@ -148,9 +158,20 @@ async def call_agent(graph, question: str, page, max_steps: int = 150):
         pred = event["agent"].get("prediction") or {}
         action = pred.get("action")
         action_input = pred.get("args")
+
+        # Ensure the page is still available before typing/clicking
+        if not page.is_closed():
+            try:
+                await page.wait_for_load_state("domcontentloaded", timeout=5000)
+            except TimeoutError:
+                print("Page load state check timed out.")
+
         steps.append(f"{len(steps) + 1}. {action}: {action_input}")
         print("\n".join(steps))
+
         if "ANSWER" in action:
             final_answer = action_input[0]
             break
+
+    print("Process finished. The browser tab will remain open.")
     return final_answer

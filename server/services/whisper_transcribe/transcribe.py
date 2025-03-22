@@ -19,6 +19,7 @@ def get_default_input_channels():
     
 # Start continuous audio recording
 def start_recording():
+    print("Hi")
     global recording, audio_data
     if not recording:
         recording = True
@@ -31,6 +32,7 @@ def start_recording():
                 buffer = sd.rec(int(44100 * 1), dtype='int16')
                 sd.wait()
                 audio_data.append(buffer)
+                print("hello")
         
         import threading
         threading.Thread(target=_record).start()
