@@ -9,7 +9,7 @@ const DarkModeChatbot = () => {
     timestamp: Date;
   }[]>([]);
   const [isLoading, setIsLoading] = useState(false);
-  // const [isTranscribing, setIsTranscribing] = useState(false);
+  const [isTranscribing, setIsTranscribing] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   
   useEffect(() => {
@@ -84,21 +84,32 @@ const DarkModeChatbot = () => {
       {/* Header */}
       <div className="flex justify-between items-center px-6 py-4 bg-gray-800 border-b border-gray-700">
         <div className="text-lg font-medium">AI Assistant</div>
-        <AudioButton onTranscription={(transcription) => {
-          // Option 1: Automatically add the transcription as a new user message in the chat
+        <AudioButton 
+
+          onTranscriptionStart={() => {
+            setIsTranscribing(true);
+          }}
+          
+          onTranscription={(transcription) => {
+          setIsTranscribing(false);
           setMessages(prev => [...prev, {
             role: "user",
             content: transcription,
             timestamp: new Date()
           }]);
-
-          // Option 2: Alternatively, you could populate the input field with the transcription:
-          // setInput(transcription);
         }}/>
       </div>
   
       {/* Messages Container (Fills remaining space) */}
       <div className="flex-1 overflow-y-auto p-6">
+
+        {isTranscribing && (
+          // CHANGED: Display a temporary notification when audio is being transcribed
+          <div className="mb-2 text-center text-gray-400 italic">
+            Transcribing audio, please wait...
+          </div>
+        )}
+
         {messages.map((message, index) => (
           <div key={index} className={`max-w-3/4 ${message.role === "user" ? "self-end" : "self-start"}`}>
             <div className="text-sm mb-1 text-gray-400">

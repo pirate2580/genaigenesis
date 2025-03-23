@@ -3,9 +3,11 @@ import React, { useState, useRef } from 'react';
 // CHANGED: Added the onTranscription prop to receive transcription text from the parent
 interface AudioButtonProps {
   onTranscription: (transcription: string) => void;
+  // callback function to notify that transcribe success
+  onTranscriptionStart?: () => void;
 }
 
-const AudioButton: React.FC<AudioButtonProps> = ({ onTranscription }) => {
+const AudioButton: React.FC<AudioButtonProps> = ({ onTranscription, onTranscriptionStart }) => {
   const [isRecording, setIsRecording] = useState(false);
   const mediaRecorderRef = useRef<MediaRecorder | null>(null);
   const recordedChunks = useRef<Blob[]>([]);
@@ -29,6 +31,10 @@ const AudioButton: React.FC<AudioButtonProps> = ({ onTranscription }) => {
           // CHANGED: Wrap the blob in a FormData object to match what the Flask API expects
           const formData = new FormData();
           formData.append('file', audioBlob, 'recording.webm');
+
+          if (onTranscriptionStart) {
+            onTranscriptionStart();
+          }
 
           try {
             const response = await fetch('http://127.0.0.1:5000/transcribe', {
