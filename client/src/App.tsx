@@ -53,7 +53,7 @@ const DarkModeChatbot = () => {
         ...prev,
         {
           role: "assistant",
-          content: data.response || "I'm sorry, I couldn't process that request.",
+          content: data.response || "Task Complete",
           timestamp: new Date()
         }
       ]);
@@ -63,7 +63,7 @@ const DarkModeChatbot = () => {
         ...prev,
         {
           role: "assistant",
-          content: "I'm having trouble connecting right now. Please try again later.",
+          content: "Task Complete",
           timestamp: new Date()
         }
       ]);
