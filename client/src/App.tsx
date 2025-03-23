@@ -84,7 +84,17 @@ const DarkModeChatbot = () => {
       {/* Header */}
       <div className="flex justify-between items-center px-6 py-4 bg-gray-800 border-b border-gray-700">
         <div className="text-lg font-medium">AI Assistant</div>
-        <AudioButton/>
+        <AudioButton onTranscription={(transcription) => {
+          // Option 1: Automatically add the transcription as a new user message in the chat
+          setMessages(prev => [...prev, {
+            role: "user",
+            content: transcription,
+            timestamp: new Date()
+          }]);
+
+          // Option 2: Alternatively, you could populate the input field with the transcription:
+          // setInput(transcription);
+        }}/>
       </div>
   
       {/* Messages Container (Fills remaining space) */}

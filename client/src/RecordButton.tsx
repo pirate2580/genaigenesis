@@ -1,63 +1,71 @@
-import { useState, useRef } from 'react';
+import React, { useState, useRef } from 'react';
 
-const RecordButton: React.FC = () => {
+// CHANGED: Added the onTranscription prop to receive transcription text from the parent
+interface AudioButtonProps {
+  onTranscription: (transcription: string) => void;
+}
+
+const AudioButton: React.FC<AudioButtonProps> = ({ onTranscription }) => {
   const [isRecording, setIsRecording] = useState(false);
   const mediaRecorderRef = useRef<MediaRecorder | null>(null);
   const recordedChunks = useRef<Blob[]>([]);
 
-  const startRecording = async () => {
-    recordedChunks.current = [];
-
-    try {
-      const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-      const mediaRecorder = new MediaRecorder(stream);
-      mediaRecorderRef.current = mediaRecorder;
-
-      mediaRecorder.ondataavailable = event => {
-        if (event.data.size > 0) {
-          recordedChunks.current.push(event.data);
-        }
-      };
-
-      mediaRecorder.onstop = () => {
-        const audioBlob = new Blob(recordedChunks.current, { type: 'audio/webm' });
-        const audioUrl = URL.createObjectURL(audioBlob);
-        const a = document.createElement('a');
-        a.style.display = 'none';
-        a.href = audioUrl;
-        a.download = 'recording.webm';
-        document.body.appendChild(a);
-        a.click();
-        window.URL.revokeObjectURL(audioUrl);
-      };
-
-      mediaRecorder.start();
+  const toggleRecording = async () => {
+    if (!isRecording) {
+      // Start recording
       setIsRecording(true);
-    } catch (error) {
-      console.error('Error accessing microphone:', error);
-    }
-  };
+      recordedChunks.current = [];
+      try {
+        const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+        const mediaRecorder = new MediaRecorder(stream);
+        mediaRecorderRef.current = mediaRecorder;
 
-  const stopRecording = () => {
-    if (mediaRecorderRef.current) {
-      mediaRecorderRef.current.stop();
-      setIsRecording(false);
-    }
-  };
+        mediaRecorder.ondataavailable = (event) => {
+          if (event.data.size > 0) recordedChunks.current.push(event.data);
+        };
 
-  const toggleRecording = () => {
-    if (isRecording) {
-      stopRecording();
+        mediaRecorder.onstop = async () => {
+          const audioBlob = new Blob(recordedChunks.current, { type: 'audio/webm' });
+          // CHANGED: Wrap the blob in a FormData object to match what the Flask API expects
+          const formData = new FormData();
+          formData.append('file', audioBlob, 'recording.webm');
+
+          try {
+            const response = await fetch('http://127.0.0.1:5000/transcribe', {
+              method: 'POST',
+              body: formData, // CHANGED: Using FormData instead of raw blob
+            });
+
+            if (!response.ok) {
+              console.error("Transcription request failed");
+              return;
+            }
+
+            const json = await response.json();
+            // CHANGED: Call the callback with the transcription text
+            onTranscription(json.transcription);
+          } catch (error) {
+            console.error('Error during transcription API call:', error);
+          }
+        };
+
+        mediaRecorder.start();
+      } catch (error) {
+        console.error('Error starting recording:', error);
+        setIsRecording(false);
+      }
     } else {
-      startRecording();
+      // Stop recording
+      setIsRecording(false);
+      mediaRecorderRef.current?.stop();
     }
   };
 
   return (
     <button onClick={toggleRecording}>
-      {isRecording ? 'Stop Recording' : 'Start Recording'}
+      {isRecording ? 'Stop & Transcribe' : 'Start Recording'}
     </button>
   );
 };
 
-export default RecordButton;
+export default AudioButton;
