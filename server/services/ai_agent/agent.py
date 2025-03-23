@@ -126,7 +126,7 @@ def create_graph(update_scratchpad, select_tool):
     # Add conditional edges for tool selection logic
     graph_builder.add_conditional_edges("agent", select_tool)
 
-    return graph_builder.compile(interrupt_before=["tools"])
+    return graph_builder.compile()
 
 # Function to call the AI agent on a question
 

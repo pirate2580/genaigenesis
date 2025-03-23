@@ -128,12 +128,12 @@ async def scroll(state: AgentState):
       return "Failed to scroll due to incorrect arguments."
 
   target, direction = scroll_args
-  scroll_direction = (
-        -scroll_amount if direction.lower() == "up" else scroll_amount
-    )
 
   if target.upper() == "WINDOW":
     scroll_amount = random.randint(450, 550)  # Randomize scroll distance
+    scroll_direction = (
+        -scroll_amount if direction.lower() == "up" else scroll_amount
+    )
 
     # slow down scroll distance
     for _ in range(random.randint(3, 6)):
@@ -143,6 +143,9 @@ async def scroll(state: AgentState):
       # Scrolling within a specific element
       # scroll_amount = 200
       scroll_amount = random.randint(150, 250)  # Randomize scroll distance to avoid bot detection
+      scroll_direction = (
+        -scroll_amount if direction.lower() == "up" else scroll_amount
+      )
       target_id = int(target)
       bbox = state["bboxes"][target_id]
       x, y = bbox["x"], bbox["y"]

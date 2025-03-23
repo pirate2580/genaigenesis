@@ -17,3 +17,5 @@ async def run_ai_agent(question: str):
     # question = "Can you search up the rickroll video on youtube?"
     response = await call_agent(graph, question, page)
     print(f"Final response: {response}")
+
+    await browser.close()
