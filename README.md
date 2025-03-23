@@ -1,5 +1,5 @@
 # SurfAI
-
+#### Your browser AI Agent. Speeds up tasks on the browser by adding features such as auto-ai-fill in, AI-summarize, AI-Search, and transcribe.
 ## Prerequisites
 Before setting up SurfAI, ensure you have the following installed:
 - **Node.js** (LTS version recommended)
@@ -12,7 +12,7 @@ Before setting up SurfAI, ensure you have the following installed:
 
 ### 1. Clone the Repository
 ```sh
-git clone [https://github.com/your-repo/surfai.git](https://github.com/pirate2580/genaigenesis.git)
+git clone https://github.com/pirate2580/genaigenesis.git
 cd surfai
 ```
 
@@ -73,6 +73,8 @@ REACT_APP_GEMINI_API_KEY=your_api_key_here
 python run.py
 ```
 
+## Graph view of what's happening
+![image](https://github.com/user-attachments/assets/34035a13-843c-4d04-984f-9853257fedee)
 
 
 ## Troubleshooting
