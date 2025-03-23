@@ -4,6 +4,7 @@ import asyncio
 from playwright.async_api import async_playwright
 from agent import create_graph, update_scratchpad, select_tool, call_agent
 
+# function to run ai agent from browser context: TODO check if it works with new changes
 async def run_ai_agent(question: str):
   async with async_playwright() as p:
     browser = await p.chromium.launch(headless=False)
