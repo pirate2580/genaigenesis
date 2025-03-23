@@ -22,7 +22,7 @@ from langgraph.graph import END, START, StateGraph
 
 from annotate import mark_page
 from definitions import AgentState
-from tools import click, type_text, scroll, wait, go_back, to_google
+from tools import click, type_text, scroll, wait, go_back, to_google, generate_narration_tts
 from playwright.async_api import async_playwright
 
 # Load environment variables
@@ -119,7 +119,7 @@ def create_graph(update_scratchpad, select_tool):
     for node_name, tool in tools.items():
         graph_builder.add_node(
             node_name,
-            RunnableLambda(tool) | (lambda observation: {"observation": observation}),
+            RunnableLambda(tool) | RunnableLambda(generate_narration_tts) | (lambda observation: {"observation": observation}),
         )
         graph_builder.add_edge(node_name, "update_scratchpad")
 
