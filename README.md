@@ -12,13 +12,18 @@ Before setting up SurfAI, ensure you have the following installed:
 
 ### 1. Clone the Repository
 ```sh
-git clone https://github.com/your-repo/surfai.git
+git clone [https://github.com/your-repo/surfai.git](https://github.com/pirate2580/genaigenesis.git)
 cd surfai
 ```
 
 ### 2. Install Dependencies
 ```sh
 npm install
+```
+install requirements for browser view and gemini
+```sh
+cd server
+pip install -r requirements.txt
 ```
 
 ## Configuration
@@ -63,19 +68,12 @@ REACT_APP_GEMINI_API_KEY=your_api_key_here
 2. Open **Google Chrome** and go to `chrome://extensions/`
 3. Enable **Developer Mode** (top right corner).
 4. Click **Load Unpacked** and select the `build` folder.
-
-### 6. Start the Development Server (Optional)
-If using a backend service:
+5. Now run the development server using a virtual environment then run 
 ```sh
-npm start
+python run.py
 ```
 
-## Deployment
-For a production build:
-```sh
-npm run build
-```
-Then, package and submit to the **Chrome Web Store** or host manually.
+
 
 ## Troubleshooting
 - **API Errors:** Check if the API key is valid and added in `.env`.
